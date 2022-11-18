@@ -9,45 +9,32 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include <Adafruit_AHTX0.h>
-
 // Ports
 int buzzer = 10;
-int iniciar = 0;
-
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
-
 // Instanciate the temperature sensor
 Adafruit_AHTX0 aht;
-
 // Variable to save time
 String formattedDate;
-
 // Creating the lcd element from the adress 0x27 with 16 columns and two rows
 LiquidCrystal_I2C lcd(0x27, 16, 2);
-
 // Local Wifi network name and password
 const char* ssid = "Inteli-COLLEGE";
 const char* password = "QazWsx@123";
-
 // FTM Wifi network name and password
 const char* ssidFTM = "Estaperto";
 const char* passwordFTM = "40028922";
-
 // FTM settings
 // Number of FTM frames requested in terms of 4 or 8 bursts (allowed values - 0 (No pref), 16, 24, 32, 64)
 const uint8_t FTM_FRAME_COUNT = 16;
-
 // Requested time period between consecutive FTM bursts in 100’s of milliseconds (allowed values - 0 (No pref) or 2-255)
 const uint16_t FTM_BURST_PERIOD = 2;
-
 // Semaphore to signal when FTM Report has been received
 xSemaphoreHandle ftmSemaphore;
-
 // Status of the received FTM Report
 bool ftmSuccess = true;
-
 // FTM report handler with the calculated data from the round trip
 void onFtmReport(arduino_event_t *event) {
   const char * status_str[5] = {"SUCCESS", "UNSUPPORTED", "CONF_REJECTED", "NO_RESPONSE", "FAIL"};
@@ -68,7 +55,6 @@ void onFtmReport(arduino_event_t *event) {
   // Signal that report is received
   xSemaphoreGive(ftmSemaphore);
 };
-
 // Initiate FTM Session and wait for FTM Report
 bool getFtmReport(){
   if(!WiFi.initiateFTM(FTM_FRAME_COUNT, FTM_BURST_PERIOD)){
@@ -78,77 +64,83 @@ bool getFtmReport(){
   // Wait for signal that report is received and return true if status was success
   return xSemaphoreTake(ftmSemaphore, portMAX_DELAY) == pdPASS && ftmSuccess;
 }
-
 int cardReadOnce = 0;
+// Initiate RFID library
 MFRC522 rfidBase = MFRC522(RFID_SS_SDA, RFID_RST);
-class LeitorRFID{
+//Creating a class for RFID reader
+class RFIDreader{
   private:
-    char codigoRFIDLido[100] = "";
-    char codigoRFIDEsperado[100] = "";
+  // Variables to read the RFID card
+    char readRFIDcode[100] = "";
+    char expectedRFIDcode[100] = "";
     MFRC522 *rfid = NULL;
-    int cartaoDetectado = 0;
-    int cartaoJaLido = 0;
-    void processaCodigoLido(){
-      char codigo[3*rfid->uid.size+1];
-      codigo[0] = 0;
+    int detectedCard = 0;
+    int readCard = 0;
+    //Function that processes the read code
+    void processReadCode(){
+      char code[3*rfid->uid.size+1];
+      code[0] = 0;
       char temp[10];
       for(int i=0; i < rfid->uid.size; i++){
         sprintf(temp,"%X",rfid->uid.uidByte[i]);
-        strcat(codigo,temp);
+        strcat(code,temp);
       }
-      codigo[3*rfid->uid.size+1] = 0;
-      strcpy(codigoRFIDLido,codigo);
-      Serial.println(codigoRFIDLido);
+      code[3*rfid->uid.size+1] = 0;
+      strcpy(readRFIDcode,code);
+      Serial.println(readRFIDcode);
     }
   public:
-    LeitorRFID(MFRC522 *leitor){
-      rfid = leitor;
+    RFIDreader(MFRC522 *reader){
+      rfid = reader;
       rfid->PCD_Init();
     };
-    char *tipoCartao(){
+    //Identify the card type
+    char *cardType(){
       MFRC522::PICC_Type piccType = rfid->PICC_GetType(rfid->uid.sak);
       Serial.println(rfid->PICC_GetTypeName(piccType));
       return((char *)rfid->PICC_GetTypeName(piccType));
     };
-    int cartaoPresente(){
-      return(cartaoDetectado);
+    //Function that detect if a card is close to the read
+    int cardIsPresent(){
+      return(detectedCard);
     };
-    int cartaoFoiLido(){
-      return(cartaoJaLido);
+    //Function that checks if the card code was read
+    int cardWasRead(){
+      return(readCard);
     };
-    void leCartao(){
+    //Function that reads the card code
+    void readingCard(){
+      //Check and prints if a card is close to the reader
       if (rfid->PICC_IsNewCardPresent()) { // new tag is available
-        iniciar = 7;
-        Serial.println("Cartao presente");
-          while (iniciar != 0){
-            iniciar -= 1;
-          }
-        cartaoDetectado = 1;
+        Serial.println("Cartão presente");
+        detectedCard = 1;
+        //Reads the card's code
         if (rfid->PICC_ReadCardSerial()) { // NUID has been readed
-          Serial.println("Cartao lido");
-          cartaoJaLido = 1;
-          processaCodigoLido();
+          Serial.println("Cartão lido");
+          readCard = 1;
+          processReadCode();
           rfid->PICC_HaltA(); // halt PICC
           rfid->PCD_StopCrypto1(); // stop encryption on PCD
-          tone(buzzer, 3000, 500);
+          tone(buzzer, 3000, 500); //Play a sound to let people know it read successufully
           delay(1000);
         }
-      }else{
-        cartaoDetectado = 0;
-        iniciar = 10;
+      }
+      //Else, no card was detected
+      else{
+        detectedCard = 0;
       }
     };
-    char *cartaoLido(){
-      return(codigoRFIDLido);
+    //Card was already read
+    char *CardWasRead(){
+      return(readRFIDcode);
     };
-    void resetarLeitura(){
-      cartaoDetectado = 0;
-      cartaoJaLido = 0;
-      iniciar = 10;
+    //Reset and prepare for a new reading
+    void resetReading(){
+      detectedCard = 0;
+      readCard = 0;
     }
 };
-LeitorRFID *leitor = NULL;
-
+RFIDreader *reader = NULL;
 String getDate(void) {
   // Ensure that we get a valid time
   // Sometimes the NTP Client retrieves 1970. To ensure that doesn't happen we need to force the update.
@@ -157,7 +149,6 @@ String getDate(void) {
   formattedDate = timeClient.getFormattedTime();
   return formattedDate;
 }
-
 // Function to scroll the text in the display when the text is longer than 16 rows
 void scrollText(int row, String message, int delayTime, int lcdColumns) {
   for (int i=0; i < lcdColumns; i++) {
@@ -170,7 +161,6 @@ void scrollText(int row, String message, int delayTime, int lcdColumns) {
     delay(delayTime);
   }
 }
-
 // Print in display the temperature if it is normal and when it is higher than 45ºC print an alert message and play an alert sound
 void messageTemperature(double temp){
   String messageStatic = "Alerta!";
@@ -201,50 +191,39 @@ void messageTemperature(double temp){
     lcd.print(" C");
   }
 }
-
 void setup() {
   // Begin serial at port 115200
   Serial.begin(115200);
   SPI.begin();
   pinMode(buzzer, OUTPUT);
-
-  leitor = new LeitorRFID(&rfidBase);
-
+  reader = new RFIDreader(&rfidBase);
   // LCD ports
   Wire.begin(4, 5); // SDA, SCL
-
-  // Temperature sensor ports  
+  // Temperature sensor ports
   Wire1.begin(42, 41);
-
   // Begin the sensor at the correct ports
   aht.begin(&Wire1);
-
   // initialize LCD
   lcd.init();
   // turn on LCD backlight
   lcd.backlight();
-
   // set cursor to first column, first row
   lcd.setCursor(0, 0);
-  
   // Station mode: the ESP32 connects to an access point
   WiFi.mode(WIFI_STA);
-
   // Connect to local netork
   WiFi.begin(ssid, password);
-
   // Begin the NTP Client server
   timeClient.begin();
-
   // Brazil offset
   timeClient.setTimeOffset(-10800); //GTM -3 = -10800
 }
 void loop() {
-  leitor->leCartao();
-  if(leitor->cartaoFoiLido()){
-    Serial.println(leitor->tipoCartao());
-    Serial.println(leitor->cartaoLido());
-    leitor->resetarLeitura();
+  reader->readingCard();
+  if(reader->cardWasRead()){
+    Serial.println(reader->cardType());
+    Serial.println(reader->CardWasRead());
+    reader->resetReading();
     // When the RFID card is read for the first time, the esp will disconnect from local network and connect to FTM. The display will show the connection status, the hour of activation,
     // the temperature and the distances beetween the esp's.
     if (cardReadOnce == 0) {
@@ -252,12 +231,10 @@ void loop() {
       formattedDate = getDate();
       WiFi.disconnect();
       ftmSemaphore = xSemaphoreCreateBinary();
-
       // Listen for FTM Report events
       WiFi.onEvent(onFtmReport, ARDUINO_EVENT_WIFI_FTM_REPORT);
       // Connect to AP that has FTM Enabled
       WiFi.begin(ssidFTM, passwordFTM);
-
       while (WiFi.status() != WL_CONNECTED) {
         lcd.print("Conectando...");
         delay(1000);
@@ -282,14 +259,12 @@ void loop() {
       delay(2000);
       lcd.clear();
       sensors_event_t humidity, temp;
-
       //get the temperature of the sensor readings
       aht.getEvent(&humidity, &temp);
       float temperature = temp.temperature;
       messageTemperature(temperature);
       delay(2000);
       lcd.clear();
-
       // Get the distances
       for (int i = 0; i < 10; i++) {
         lcd.setCursor(0, 0);
@@ -298,7 +273,6 @@ void loop() {
         lcd.clear();
       }
     }
-
     // When the RFID card is read for the second time the FTM is disconnected
     else if(cardReadOnce == 1) {
       WiFi.disconnect();
