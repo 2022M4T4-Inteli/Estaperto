@@ -9,6 +9,9 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include <Adafruit_AHTX0.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+
 // Ports
 int buzzer = 10;
 // Define NTP Client to get time
@@ -18,6 +21,8 @@ NTPClient timeClient(ntpUDP);
 Adafruit_AHTX0 aht;
 // Variable to save time
 String formattedDate;
+float firstDateHour;
+float firstDateMinutes;
 // Creating the lcd element from the adress 0x27 with 16 columns and two rows
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 // Local Wifi network name and password
@@ -191,6 +196,39 @@ void messageTemperature(double temp){
     lcd.print(" C");
   }
 }
+
+void postDataToServer(string endpoint) {
+  Serial.println("Posting JSON data to server...");
+  // Block until we are able to connect to the WiFi access point
+    HTTPClient http;
+    //endereço do servidor
+    serverAddress = "http://10.128.65.95:3031/" + endpoint;
+    http.begin(serverAddress);
+    http.addHeader("Content-Type", "application/json");
+    StaticJsonDocument<200> doc;
+    // Add values in the document
+    //adiciona os campos no json
+    //sensor= coluna do banco de dados/ json
+    //colocar a variavel responsavel por salvar a leitura do sensor;
+    doc["time"] = "2 min";
+    // Add an array.
+    //criar um vetor de dados
+    // JsonArray data = doc.createNestedArray("data");
+    // data.add(48.756080);
+    // data.add(2.302038);
+    String requestBody;
+    serializeJson(doc, requestBody);
+    int httpResponseCode = http.POST(requestBody);
+    if(httpResponseCode>0){
+      String response = http.getString();
+      Serial.println(httpResponseCode);
+      Serial.println(response);
+    }
+    else {
+      Serial.printf("Error occurred while sending HTTP POST: %s\n", HTTPClient.errorToString(statusCode).c_str());
+    }
+}
+
 void setup() {
   // Begin serial at port 115200
   Serial.begin(115200);
@@ -221,7 +259,6 @@ void setup() {
 void loop() {
   reader->readingCard();
   if(reader->cardWasRead()){
-    Serial.println(reader->cardType());
     Serial.println(reader->CardWasRead());
     reader->resetReading();
     // When the RFID card is read for the first time, the esp will disconnect from local network and connect to FTM. The display will show the connection status, the hour of activation,
@@ -229,6 +266,8 @@ void loop() {
     if (cardReadOnce == 0) {
       // get actual hour
       formattedDate = getDate();
+      firstDateHour = timeClient.getHours();
+      firstDateMinutes = timeClient.getMinutes();
       WiFi.disconnect();
       ftmSemaphore = xSemaphoreCreateBinary();
       // Listen for FTM Report events
@@ -275,6 +314,7 @@ void loop() {
     }
     // When the RFID card is read for the second time the FTM is disconnected
     else if(cardReadOnce == 1) {
+      int control = 0;
       WiFi.disconnect();
       // Print in the lcd the disconnecting message while Wifi is disconnecting
       while (WiFi.status() != WL_DISCONNECTED) {
@@ -289,10 +329,32 @@ void loop() {
         tone(buzzer, 4440, 200);
         digitalWrite(buzzer, LOW); //turn off buzzer
         lcd.setCursor(5, 0);
-        lcd.print("Wi-fi");
-        lcd.setCursor(1, 1);
-        lcd.println("desconectado!");
+        lcd.print("Wi-fi desconectado");
+        WiFi.begin(ssid, password);
+        lcd.setCursor(4, 1);
+        String exitDate = getDate();
+        lcd.println(exitDate);
+        float secondDateHour = timeClient.getHours();
+        float secondDateMinutes = timeClient.getMinutes();
+        int timeHour = secondDateHour - firstDateHour;
+        int timeMinutes = secondDateMinutes - firstDateMinutes;
+        int totalTime;
+        if (timeHour == 0) {
+          totalTime = timeMinutes;
+        }
+        else {
+          totalTime = timeMinutes + (timeHour*60);
+        }
+        Serial.println(totalTime);
         cardReadOnce = 0;
+        if (control == 0) {
+          postDataToServer("insertRecebimento");
+          control += 1;
+        }
+        else {
+          postDataToServer("insertRetirada");
+          control = 0;
+        }
       }
       delay(1000);
     }
