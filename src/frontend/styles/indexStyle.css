@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300&family=Montserrat:wght@400;500;800&display=swap');
+
+*{
+    background: rgb(rgb(197, 197, 197), rgb(187rgb(139, 139, 139)7, 187));
+    font-family: 'Montserrat';
+    margin: 0;
+}
+
+.container{
+    display: flex;
+    flex-direction:row;
+    
+}
+
+#logo{
+    width: 200px;
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+.greenMenu{
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(#BDD9AC, #008E1F);
+    font-family: 'Merriweather';
+    color: white;
+    align-items: center;
+  
+    padding: 80px;
+    border-radius: 0px 20px 20px 0px;
+}
+
+.greenMenu input{
+    border: none;
+    border-radius: 10px;
+    height: 30px;
+    width: 220px;
+}
+
+.greenMenu h1 {
+    margin-bottom: 60px;
+    margin-top: 40px;
+}
+
+.greenMenu p{
+    align-self: flex-start;
+    margin-top: 40px;
+    margin-bottom: 5px;
+}
+
+.lottieContainer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-left: 230px;
+    
+}
