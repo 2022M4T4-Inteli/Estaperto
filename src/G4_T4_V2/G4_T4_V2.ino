@@ -20,7 +20,8 @@ NTPClient timeClient(ntpUDP);
 // Instanciate the temperature sensor
 Adafruit_AHTX0 aht;
 // Variable to save time
-String formattedDate;
+String enterDate;
+
 float firstDateHour;
 float firstDateMinutes;
 // Creating the lcd element from the adress 0x27 with 16 columns and two rows
@@ -151,7 +152,7 @@ String getDate(void) {
   // Sometimes the NTP Client retrieves 1970. To ensure that doesn't happen we need to force the update.
   timeClient.update();
   // Convert time to a readable format
-  formattedDate = timeClient.getFormattedTime();
+  String formattedDate = timeClient.getFormattedTime();
   return formattedDate;
 }
 // Function to scroll the text in the display when the text is longer than 16 rows
@@ -197,12 +198,13 @@ void messageTemperature(double temp){
   }
 }
 
-void postDataToServer(string endpoint) {
+void postDataToServer(String endpoint, int time, String receivingTime, String parkingTime, int docControl) {
   Serial.println("Posting JSON data to server...");
   // Block until we are able to connect to the WiFi access point
     HTTPClient http;
     //endereço do servidor
-    serverAddress = "http://10.128.65.95:3031/" + endpoint;
+    String serverAddress = "http://10.128.64.56:3031/" + endpoint;
+    Serial.println(serverAddress);
     http.begin(serverAddress);
     http.addHeader("Content-Type", "application/json");
     StaticJsonDocument<200> doc;
@@ -210,7 +212,15 @@ void postDataToServer(string endpoint) {
     //adiciona os campos no json
     //sensor= coluna do banco de dados/ json
     //colocar a variavel responsavel por salvar a leitura do sensor;
-    doc["time"] = "2 min";
+    if (docControl == 0){
+      doc["placa"] = "ABC0D29";
+      doc["manobristaIda"] = "CFM00";
+      doc["tempoEstimado"] = time;
+    }else{
+      doc["manobristaVolta"] = "AWD11";
+    }
+    doc["horarioRecebimento"] = receivingTime;
+    doc["horarioEstacionamento"] = parkingTime;
     // Add an array.
     //criar um vetor de dados
     // JsonArray data = doc.createNestedArray("data");
@@ -218,14 +228,18 @@ void postDataToServer(string endpoint) {
     // data.add(2.302038);
     String requestBody;
     serializeJson(doc, requestBody);
+    Serial.println(requestBody);
     int httpResponseCode = http.POST(requestBody);
+    Serial.println(httpResponseCode);
     if(httpResponseCode>0){
       String response = http.getString();
       Serial.println(httpResponseCode);
       Serial.println(response);
     }
     else {
-      Serial.printf("Error occurred while sending HTTP POST: %s\n", HTTPClient.errorToString(statusCode).c_str());
+      // int statusCode = http.responseStatusCode();
+      // Serial.println(statusCode);
+      // Serial.printf("Error occurred while sending HTTP POST: %s\n", HTTPClient.errorToString(statusCode).c_str());
     }
 }
 
@@ -265,7 +279,7 @@ void loop() {
     // the temperature and the distances beetween the esp's.
     if (cardReadOnce == 0) {
       // get actual hour
-      formattedDate = getDate();
+      enterDate = getDate();
       firstDateHour = timeClient.getHours();
       firstDateMinutes = timeClient.getMinutes();
       WiFi.disconnect();
@@ -286,7 +300,7 @@ void loop() {
         digitalWrite(buzzer, HIGH); // turn on buzzer
         tone(buzzer, 2000, 300);
         lcd.setCursor(4, 1);
-        lcd.println(formattedDate);
+        lcd.println(enterDate);
         digitalWrite(buzzer, LOW); // turn off buzzer
         cardReadOnce = 1;
         delay(1000);
@@ -305,12 +319,12 @@ void loop() {
       delay(2000);
       lcd.clear();
       // Get the distances
-      for (int i = 0; i < 10; i++) {
-        lcd.setCursor(0, 0);
-        getFtmReport();
-        delay(2000);
-        lcd.clear();
-      }
+      // for (int i = 0; i < 10; i++) {
+      //   lcd.setCursor(0, 0);
+      //   getFtmReport();
+      //   delay(2000);
+      //   lcd.clear();
+      // }
     }
     // When the RFID card is read for the second time the FTM is disconnected
     else if(cardReadOnce == 1) {
@@ -345,14 +359,14 @@ void loop() {
         else {
           totalTime = timeMinutes + (timeHour*60);
         }
-        Serial.println(totalTime);
         cardReadOnce = 0;
+
         if (control == 0) {
-          postDataToServer("insertRecebimento");
+          postDataToServer("insertRecebimento", totalTime, enterDate, exitDate, control);
           control += 1;
         }
         else {
-          postDataToServer("insertRetirada");
+          postDataToServer("insertRetirada", 0, enterDate, exitDate, control);
           control = 0;
         }
       }

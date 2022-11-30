@@ -1,39 +1,53 @@
-var WebSocketServer = require('websocket').server;
 const express = require("express");
-const sqlite3 = require("sqlite3");
+const sqlite3 = require('sqlite3').verbose();
+const bodyParser = require('body-parser');
+const urlencodedParser = bodyParser.urlencoded({ extended: false })
 const app = express();
+
+const hostname = '10.128.64.56';
 const port = 3031;
 const db = new sqlite3.Database("database.db")
 
 app.use(express.static("../frontend"));
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
-
-
-//Cria o WebSocket server
-wsServer = new WebSocketServer({
-httpServer: app
+app.listen(port, hostname, () => {
+  console.log(`Page server running at http://${hostname}:${port}`);
 });
 
-//Chamado quando um client deseja conectar
-wsServer.on('request', (request) => {
-  console.log(`entrou`);
-  //Aceita a conexão do client
-  let client = request.accept(null, request.origin);
-  console.log(`aceitou`);
 
-  //Chamado quando o client envia uma mensagem
-  client.on('message', (message) => {
-      console.log(message);
-      app.get("/att", (req, res) => {
-        res.json(message);
-      });
-  });
+app.use(express.json());
 
-//Chamado quando a conexão com o client é fechada
-client.on('close', () => {
-    console.log("Conexão fechada");
+app.post("/insertRecebimento", (req, res) => {
+  const infos = req.body;
+  console.log(req.body);
+  db.get(
+    `INSERT INTO carros (placa, manobristaIda, horarioRecebimento, horarioEstacionamento, tempoEstimado) VALUES ('${infos.placa}', '${infos.manobristaIda}', '${infos.horarioRecebimento}', '${infos.horarioEstacionamento}', '${infos.tempoEstimado}')`,
+    (error, response) => {
+        if (error) {
+          console.log(error)
+        }
+    }
+  );
 });
+
+app.post("/insertRetirada", (req, res) => {
+  const infos = req.body;
+  console.log(req.body);
+  db.get(
+    `INSERT INTO carros (manobristaVolta, horarioRetirada, horarioDevolucao) VALUES ('${infos.manobristaVolta}', '${infos.horarioRetirada}', '${infos.horarioDevolucao}')`,
+    (error, response) => {
+        if (error) {
+          console.log(error)
+        }
+    }
+  );
+});
+
+app.get("/estimatedTime", (req, res) => {
+  db.all(
+    'SELECT tempoEstimado FROM carros WHERE placa = ' + req.body.placa + ' ORDER BY id DESC LIMIT 1',
+    (error, data) => {
+      res.json(data)
+    }
+  );
 });
