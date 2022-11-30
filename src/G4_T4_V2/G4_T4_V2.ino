@@ -198,13 +198,33 @@ void messageTemperature(double temp){
   }
 }
 
-void postDataToServer(String endpoint, int time, String receivingTime, String parkingTime, int docControl) {
+int getId(){
+  HTTPClient http;
+
+  String serverAddress = "http://10.128.64.56:3031/idQuery";
+
+  http.begin(serverAddress);
+  http.addHeader("Content-Type", "application/json");
+  StaticJsonDocument<200> doc;
+  doc["placa"] = "ABC0D29";
+  String requestBody;
+  serializeJson(doc, requestBody);
+  int httpResponseCode = http.GET(requestBody);
+  if(httpResponseCode>0){
+    String response = http.getString();
+    Serial.println(httpResponseCode);
+    Serial.println(response);
+    return response;
+  }
+}
+
+void postDataToServer(String endpoint, int time, String receivingTime, String parkingTime, int docControl, int id) {
   Serial.println("Posting JSON data to server...");
   // Block until we are able to connect to the WiFi access point
     HTTPClient http;
     //endereço do servidor
     String serverAddress = "http://10.128.64.56:3031/" + endpoint;
-    Serial.println(serverAddress);
+
     http.begin(serverAddress);
     http.addHeader("Content-Type", "application/json");
     StaticJsonDocument<200> doc;
@@ -217,6 +237,7 @@ void postDataToServer(String endpoint, int time, String receivingTime, String pa
       doc["manobristaIda"] = "CFM00";
       doc["tempoEstimado"] = time;
     }else{
+      doc["idQuery"] = id;
       doc["manobristaVolta"] = "AWD11";
     }
     doc["horarioRecebimento"] = receivingTime;
@@ -271,6 +292,8 @@ void setup() {
   timeClient.setTimeOffset(-10800); //GTM -3 = -10800
 
   int control = 0;
+
+  int idQuery;
 }
 void loop() {
   reader->readingCard();
@@ -363,11 +386,12 @@ void loop() {
         cardReadOnce = 0;
 
         if (control == 0) {
-          postDataToServer("insertRecebimento", totalTime, enterDate, exitDate, control);
+          postDataToServer("insertRecebimento", totalTime, enterDate, exitDate, control, 0);
           control += 1;
         }
         else {
-          postDataToServer("insertRetirada", 0, enterDate, exitDate, control);
+          idQuery = getId();
+          postDataToServer("insertRetirada", 0, enterDate, exitDate, control, idQuery);
           control = 0;
         }
       }

@@ -30,11 +30,20 @@ app.post("/insertRecebimento", (req, res) => {
   );
 });
 
+app.get("/idQuery", (req, res) => {
+  db.all(
+    'SELECT id FROM carros WHERE placa = ' + req.body.placa + ' ORDER BY id DESC LIMIT 1',
+    (error, data) => {
+      res.json(data)
+    }
+  );
+});
+
 app.post("/insertRetirada", (req, res) => {
   const infos = req.body;
   console.log(req.body);
   db.get(
-    `INSERT INTO carros (manobristaVolta, horarioRetirada, horarioDevolucao) VALUES ('${infos.manobristaVolta}', '${infos.horarioRetirada}', '${infos.horarioDevolucao}')`,
+    `INSERT INTO carros (manobristaVolta, horarioRetirada, horarioDevolucao) VALUES ('${infos.manobristaVolta}', '${infos.horarioRetirada}', '${infos.horarioDevolucao}' WHERE id == '${infos.idQuery}')`,
     (error, response) => {
         if (error) {
           console.log(error)
