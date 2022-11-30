@@ -269,6 +269,8 @@ void setup() {
   timeClient.begin();
   // Brazil offset
   timeClient.setTimeOffset(-10800); //GTM -3 = -10800
+
+  int control = 0;
 }
 void loop() {
   reader->readingCard();
@@ -328,7 +330,6 @@ void loop() {
     }
     // When the RFID card is read for the second time the FTM is disconnected
     else if(cardReadOnce == 1) {
-      int control = 0;
       WiFi.disconnect();
       // Print in the lcd the disconnecting message while Wifi is disconnecting
       while (WiFi.status() != WL_DISCONNECTED) {
