@@ -19,8 +19,10 @@ WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
 // Instanciate the temperature sensor
 Adafruit_AHTX0 aht;
-// Variable to save time
-String enterDate;
+// Variables to save time
+String enterTime;
+String exitTime;
+int totalTime;
 
 // variables for POSTs
 int control = 0;
@@ -28,6 +30,9 @@ String idQuery;
 
 float firstDateHour;
 float firstDateMinutes;
+float secondDateHour;
+float secondDateMinutes;
+
 // Creating the lcd element from the adress 0x27 with 16 columns and two rows
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 // Local Wifi network name and password
@@ -45,6 +50,7 @@ const uint16_t FTM_BURST_PERIOD = 2;
 xSemaphoreHandle ftmSemaphore;
 // Status of the received FTM Report
 bool ftmSuccess = true;
+
 // FTM report handler with the calculated data from the round trip
 void onFtmReport(arduino_event_t *event) {
   const char * status_str[5] = {"SUCCESS", "UNSUPPORTED", "CONF_REJECTED", "NO_RESPONSE", "FAIL"};
@@ -65,6 +71,7 @@ void onFtmReport(arduino_event_t *event) {
   // Signal that report is received
   xSemaphoreGive(ftmSemaphore);
 };
+
 // Initiate FTM Session and wait for FTM Report
 bool getFtmReport(){
   if(!WiFi.initiateFTM(FTM_FRAME_COUNT, FTM_BURST_PERIOD)){
@@ -74,6 +81,7 @@ bool getFtmReport(){
   // Wait for signal that report is received and return true if status was success
   return xSemaphoreTake(ftmSemaphore, portMAX_DELAY) == pdPASS && ftmSuccess;
 }
+
 int cardReadOnce = 0;
 // Initiate RFID library
 MFRC522 rfidBase = MFRC522(RFID_SS_SDA, RFID_RST);
@@ -151,6 +159,7 @@ class RFIDreader{
     }
 };
 RFIDreader *reader = NULL;
+
 String getDate(void) {
   // Ensure that we get a valid time
   // Sometimes the NTP Client retrieves 1970. To ensure that doesn't happen we need to force the update.
@@ -159,6 +168,7 @@ String getDate(void) {
   String formattedDate = timeClient.getFormattedTime();
   return formattedDate;
 }
+
 // Function to scroll the text in the display when the text is longer than 16 rows
 void scrollText(int row, String message, int delayTime, int lcdColumns) {
   for (int i=0; i < lcdColumns; i++) {
@@ -171,6 +181,7 @@ void scrollText(int row, String message, int delayTime, int lcdColumns) {
     delay(delayTime);
   }
 }
+
 // Print in display the temperature if it is normal and when it is higher than 45ºC print an alert message and play an alert sound
 void messageTemperature(double temp){
   String messageStatic = "Alerta!";
@@ -232,20 +243,28 @@ void postDataToServer(String endpoint, int time, String receivingTime, String pa
     http.begin(serverAddress);
     http.addHeader("Content-Type", "application/json");
     StaticJsonDocument<200> doc;
+
     // Add values in the document
-    //adiciona os campos no json
-    //sensor= coluna do banco de dados/ json
-    //colocar a variavel responsavel por salvar a leitura do sensor;
     if (docControl == 0){
       doc["placa"] = "ABC0D29";
       doc["manobristaIda"] = "CFM00";
       doc["tempoEstimado"] = time;
-    }else{
+      doc["horarioRecebimento"] = receivingTime;
+      doc["horarioEstacionamento"] = parkingTime;
+    }
+
+    else if (docControl == 1) {
+      doc["idQuery"] = id;
+      doc["placa"] = "ABC0D29";
+      doc["tempoEstimado"] = time;
+    }
+
+    else{
       doc["idQuery"] = id;
       doc["manobristaVolta"] = "AWD11";
+      doc["horarioRecebimento"] = receivingTime;
+      doc["horarioEstacionamento"] = parkingTime;
     }
-    doc["horarioRecebimento"] = receivingTime;
-    doc["horarioEstacionamento"] = parkingTime;
     // Add an array.
     //criar um vetor de dados
     // JsonArray data = doc.createNestedArray("data");
@@ -266,6 +285,76 @@ void postDataToServer(String endpoint, int time, String receivingTime, String pa
       // Serial.println(statusCode);
       // Serial.printf("Error occurred while sending HTTP POST: %s\n", HTTPClient.errorToString(statusCode).c_str());
     }
+}
+
+void getEnterTime() {
+  // get actual hour
+  enterTime = getDate();
+  firstDateHour = timeClient.getHours();
+  firstDateMinutes = timeClient.getMinutes();
+}
+
+void connectFTM(){
+  // Connect to AP that has FTM Enabled
+  WiFi.begin(ssidFTM, passwordFTM);
+  while (WiFi.status() != WL_CONNECTED) {
+    lcd.print("Conectando...");
+    delay(1000);
+    lcd.clear();
+  }
+}
+
+void lcdPrintConnectedWifi() {
+  lcd.clear();
+  lcd.print("Wi-fi conectado!");
+  digitalWrite(buzzer, HIGH); // turn on buzzer
+  tone(buzzer, 2000, 300);
+  lcd.setCursor(4, 1);
+  lcd.println(enterTime);
+  digitalWrite(buzzer, LOW); // turn off buzzer
+  cardReadOnce = 1;
+  delay(1000);
+}
+
+void lcdPrintTemperatureDistance() {
+  lcd.clear();
+  sensors_event_t humidity, temp;
+  //get the temperature of the sensor readings
+  aht.getEvent(&humidity, &temp);
+  float temperature = temp.temperature;
+  messageTemperature(temperature);
+  delay(2000);
+  lcd.clear();
+  // Get the distances
+  lcd.setCursor(0, 0);
+  getFtmReport();
+  delay(2000);
+  lcd.clear();
+}
+
+void lcdPrintDisconnectedWifi() {
+  digitalWrite(buzzer, HIGH); // turn on buzzer
+  tone(buzzer, 4440, 200);
+  digitalWrite(buzzer, LOW); //turn off buzzer
+  lcd.setCursor(0, 0);
+  lcd.print("Wi-fi desconectado");
+  WiFi.begin(ssid, password);
+}
+
+void getExitTime() {
+  exitTime = getDate();
+  lcd.println(exitTime);
+  secondDateHour = timeClient.getHours();
+  secondDateMinutes = timeClient.getMinutes();
+  int timeHour = secondDateHour - firstDateHour;
+  int timeMinutes = secondDateMinutes - firstDateMinutes;
+  totalTime;
+  if (timeHour == 0) {
+    totalTime = timeMinutes;
+  }
+  else {
+    totalTime = timeMinutes + (timeHour*60);
+  }
 }
 
 void setup() {
@@ -296,6 +385,7 @@ void setup() {
   timeClient.setTimeOffset(-10800); //GTM -3 = -10800
 
 }
+
 void loop() {
   reader->readingCard();
   if(reader->cardWasRead()){
@@ -304,51 +394,25 @@ void loop() {
     // When the RFID card is read for the first time, the esp will disconnect from local network and connect to FTM. The display will show the connection status, the hour of activation,
     // the temperature and the distances beetween the esp's.
     if (cardReadOnce == 0) {
-      // get actual hour
-      enterDate = getDate();
-      firstDateHour = timeClient.getHours();
-      firstDateMinutes = timeClient.getMinutes();
+      getEnterTime();
       WiFi.disconnect();
       ftmSemaphore = xSemaphoreCreateBinary();
       // Listen for FTM Report events
       WiFi.onEvent(onFtmReport, ARDUINO_EVENT_WIFI_FTM_REPORT);
-      // Connect to AP that has FTM Enabled
-      WiFi.begin(ssidFTM, passwordFTM);
-      while (WiFi.status() != WL_CONNECTED) {
-        lcd.print("Conectando...");
-        delay(1000);
-        lcd.clear();
-      }
+      connectFTM();
       // Print in the lcd the time and play a sound when Wifi is connected
       if (WiFi.status() == 3) {
-        lcd.clear();
-        lcd.print("Wi-fi conectado!");
-        digitalWrite(buzzer, HIGH); // turn on buzzer
-        tone(buzzer, 2000, 300);
-        lcd.setCursor(4, 1);
-        lcd.println(enterDate);
-        digitalWrite(buzzer, LOW); // turn off buzzer
-        cardReadOnce = 1;
-        delay(1000);
+        lcdPrintConnectedWifi();
       }
       // Print in the lcd if Wifi is not connected
       else if (WiFi.status() == WL_CONNECT_FAILED) {
         lcd.println("Falha na conexao");
       }
       delay(2000);
-      lcd.clear();
-      sensors_event_t humidity, temp;
-      //get the temperature of the sensor readings
-      aht.getEvent(&humidity, &temp);
-      float temperature = temp.temperature;
-      messageTemperature(temperature);
-      delay(2000);
-      lcd.clear();
-      // Get the distances
-      lcd.setCursor(0, 0);
-      getFtmReport();
-      delay(2000);
-      lcd.clear();
+      lcdPrintTemperatureDistance();
+      if (control == 1) {
+        postDataToServer("retornoCarro", totalTime, "", "", control, "");
+      }
     }
     // When the RFID card is read for the second time the FTM is disconnected
     else if(cardReadOnce == 1) {
@@ -362,35 +426,18 @@ void loop() {
       lcd.clear();
       // Print in the lcd a message when Wifi is disconnected
       if (WiFi.status() == WL_DISCONNECTED) {
-        digitalWrite(buzzer, HIGH); // turn on buzzer
-        tone(buzzer, 4440, 200);
-        digitalWrite(buzzer, LOW); //turn off buzzer
-        lcd.setCursor(5, 0);
-        lcd.print("Wi-fi desconectado");
-        WiFi.begin(ssid, password);
+        lcdPrintDisconnectedWifi();
         lcd.setCursor(4, 1);
-        String exitDate = getDate();
-        lcd.println(exitDate);
-        float secondDateHour = timeClient.getHours();
-        float secondDateMinutes = timeClient.getMinutes();
-        int timeHour = secondDateHour - firstDateHour;
-        int timeMinutes = secondDateMinutes - firstDateMinutes;
-        int totalTime;
-        if (timeHour == 0) {
-          totalTime = timeMinutes;
-        }
-        else {
-          totalTime = timeMinutes + (timeHour*60);
-        }
+        getExitTime();
         cardReadOnce = 0;
 
         if (control == 0) {
-          postDataToServer("insertRecebimento", totalTime, enterDate, exitDate, control, "");
+          postDataToServer("insertRecebimento", totalTime, enterTime, exitTime, control, "");
           control += 1;
         }
-        else {
+        else if (control == 2){
           idQuery = getId();
-          postDataToServer("insertRetirada", 0, enterDate, exitDate, control, idQuery);
+          postDataToServer("insertRetirada", 0, enterTime, exitTime, control, idQuery);
           control = 0;
         }
       }
