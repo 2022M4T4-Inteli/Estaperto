@@ -18,15 +18,6 @@ app.listen(port, hostname, () => {
 
 app.use(express.json());
 
-app.get("/getTeste", (req, res) => {
-  db.all(
-    'SELECT * FROM CARROS',
-    (error, data) => {
-      res.json(data)
-    }
-  );
-});
-
 app.post("/insertRecebimento", (req, res) => {
   const infos = req.body;
   console.log(req.body);
@@ -53,7 +44,15 @@ app.post("/insertRetirada", (req, res) => {
   const infos = req.body;
   console.log(req.body);
   db.get(
-    `INSERT INTO carros (manobristaVolta, horarioRetirada, horarioDevolucao) VALUES ('${infos.manobristaVolta}', '${infos.horarioRetirada}', '${infos.horarioDevolucao}' WHERE id == '${infos.idQuery}')`,
+    `INSERT INTO carros (manobristaVolta, horarioRetirada, horarioDevolucao) VALUES ('${infos.manobristaVolta}', '${infos.horarioRetirada}', '${infos.horarioDevolucao}') WHERE id == '${infos.idQuery}'`,
+    (error, response) => {
+        if (error) {
+          console.log(error)
+        }
+    }
+  );
+  db.all(
+    `DELETE FROM totem WHERE id == '${infos.idQuery}'`,
     (error, response) => {
         if (error) {
           console.log(error)
@@ -62,9 +61,19 @@ app.post("/insertRetirada", (req, res) => {
   );
 });
 
-app.get("/estimatedTime", (req, res) => {
+app.post("/retornoCarro", (req, res) => {
+  const infos = req.body;
   db.all(
-    'SELECT tempoEstimado FROM carros WHERE placa = "' + req.body.placa + '" ORDER BY id DESC LIMIT 1',
+    `INSERT INTO totem (placa, tempoEstimado, id) VALUES '${infos.placa}', '${infos.tempoEstimado}', '${infos.idQuery}'`,
+    (error, data) => {
+      res.json(data)
+    }
+  );
+});
+
+app.get("/retornoTotem", (req, res) => {
+  db.all(
+    'SELECT placa, tempoEstimado FROM totem ORDER BY id ASC',
     (error, data) => {
       res.json(data)
     }
