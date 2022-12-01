@@ -4,11 +4,12 @@ const bodyParser = require('body-parser');
 const urlencodedParser = bodyParser.urlencoded({ extended: false })
 const app = express();
 
-const hostname = '10.128.64.56';
+const hostname = '10.128.65.251';
 const port = 3031;
 const db = new sqlite3.Database("database.db")
 
-app.use(express.static("../frontend"));
+app.use(express.static("../frontend/pages"));
+app.use(express.static("../frontend/"));
 
 app.listen(port, hostname, () => {
   console.log(`Page server running at http://${hostname}:${port}`);
@@ -16,6 +17,15 @@ app.listen(port, hostname, () => {
 
 
 app.use(express.json());
+
+app.get("/getTeste", (req, res) => {
+  db.all(
+    'SELECT * FROM CARROS',
+    (error, data) => {
+      res.json(data)
+    }
+  );
+});
 
 app.post("/insertRecebimento", (req, res) => {
   const infos = req.body;
@@ -31,8 +41,8 @@ app.post("/insertRecebimento", (req, res) => {
 });
 
 app.get("/idQuery", (req, res) => {
-  db.all(
-    'SELECT id FROM carros WHERE placa = ' + req.body.placa + ' ORDER BY id DESC LIMIT 1',
+  db.get(
+    'SELECT id FROM carros WHERE placa = "' + req.body.placa + '" ORDER BY id DESC LIMIT 1',
     (error, data) => {
       res.json(data)
     }
@@ -54,7 +64,7 @@ app.post("/insertRetirada", (req, res) => {
 
 app.get("/estimatedTime", (req, res) => {
   db.all(
-    'SELECT tempoEstimado FROM carros WHERE placa = ' + req.body.placa + ' ORDER BY id DESC LIMIT 1',
+    'SELECT tempoEstimado FROM carros WHERE placa = "' + req.body.placa + '" ORDER BY id DESC LIMIT 1',
     (error, data) => {
       res.json(data)
     }

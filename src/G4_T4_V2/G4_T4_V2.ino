@@ -22,6 +22,10 @@ Adafruit_AHTX0 aht;
 // Variable to save time
 String enterDate;
 
+// variables for POSTs
+int control = 0;
+String idQuery;
+
 float firstDateHour;
 float firstDateMinutes;
 // Creating the lcd element from the adress 0x27 with 16 columns and two rows
@@ -198,10 +202,10 @@ void messageTemperature(double temp){
   }
 }
 
-int getId(){
+String getId(){
   HTTPClient http;
 
-  String serverAddress = "http://10.128.64.56:3031/idQuery";
+  String serverAddress = "http://10.128.65.251:3031/idQuery";
 
   http.begin(serverAddress);
   http.addHeader("Content-Type", "application/json");
@@ -209,21 +213,21 @@ int getId(){
   doc["placa"] = "ABC0D29";
   String requestBody;
   serializeJson(doc, requestBody);
-  int httpResponseCode = http.GET(requestBody);
+  int httpResponseCode = http.POST(requestBody);
   if(httpResponseCode>0){
     String response = http.getString();
     Serial.println(httpResponseCode);
     Serial.println(response);
-    return response;
+  return response;
   }
 }
 
-void postDataToServer(String endpoint, int time, String receivingTime, String parkingTime, int docControl, int id) {
+void postDataToServer(String endpoint, int time, String receivingTime, String parkingTime, int docControl, String id) {
   Serial.println("Posting JSON data to server...");
   // Block until we are able to connect to the WiFi access point
     HTTPClient http;
     //endereço do servidor
-    String serverAddress = "http://10.128.64.56:3031/" + endpoint;
+    String serverAddress = "http://10.128.65.251:3031/" + endpoint;
 
     http.begin(serverAddress);
     http.addHeader("Content-Type", "application/json");
@@ -291,9 +295,6 @@ void setup() {
   // Brazil offset
   timeClient.setTimeOffset(-10800); //GTM -3 = -10800
 
-  int control = 0;
-
-  int idQuery;
 }
 void loop() {
   reader->readingCard();
@@ -344,12 +345,10 @@ void loop() {
       delay(2000);
       lcd.clear();
       // Get the distances
-      // for (int i = 0; i < 10; i++) {
-      //   lcd.setCursor(0, 0);
-      //   getFtmReport();
-      //   delay(2000);
-      //   lcd.clear();
-      // }
+      lcd.setCursor(0, 0);
+      getFtmReport();
+      delay(2000);
+      lcd.clear();
     }
     // When the RFID card is read for the second time the FTM is disconnected
     else if(cardReadOnce == 1) {
@@ -386,7 +385,7 @@ void loop() {
         cardReadOnce = 0;
 
         if (control == 0) {
-          postDataToServer("insertRecebimento", totalTime, enterDate, exitDate, control, 0);
+          postDataToServer("insertRecebimento", totalTime, enterDate, exitDate, control, "");
           control += 1;
         }
         else {

@@ -1,28 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../styles/indexStyle.css">
-    <title>Login</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../styles/style.css" />
     <link rel="shortcut icon" href="../assets/favicon.png" type="image/x-icon" />
-</head>
-<body>
-    <div class="container">
-        <div class="greenMenu">
-            <h1>Login</h1>
-            <p>Email</p>
-            <input type="text">
-            <p>Senha</p>
-            <input type="password">
-        </div>
-        <div class="lottieContainer">
-            <img  id="logo" src="../assets/estapar-horizontal-gradiente-preto 1.png" alt="">
-            <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script> 
-    <lottie-player src="https://lottie.host/6e563e02-f820-45f3-953d-db08cb9ad279/bp8yX0ZVKk.json" background="transparent" speed="1" style="width: 500px; height: 500px;margin-bottom: 40px;" loop autoplay></lottie-player>
-        </div>
-
+    <title>Estapar</title>
+  </head>
+  <body>
+    <div class="nav">
+      <div class="hour">15:30</div>
+      <div class="title">Fila de espera</div>
+      <div class="weather">
+        <img id="nuvem" src="../assets/nuvem 1.png" alt="nuvem" />
+        21°C
+      </div>
     </div>
-</body>
+    <div class="container">
+      <table class="table">
+        <tr>
+          <th>Modelo</th>
+          <th>Posição</th>
+          <th>Placa</th>
+          <th>Tempo</th>
+        </tr>
+        <tr>
+          <td class="borderLeft" align="center">
+            <img
+              class="carros"
+              src="../assets/carrinho1.svg"
+              alt="carro_verde"
+            />
+          </td>
+
+          <td>
+            <p>1</p>
+          </td>
+          <td>
+            <p>ABC0D12</p>
+          </td>
+          <td>
+            <p>4 min</p>
+          </td>
+        </tr>
+        <tr>
+          <td class="borderLeft" align="center">
+            <img
+              class="carros"
+              src="../assets/carrinho2.svg"
+              alt="carro_laranja"
+            />
+          </td>
+          <td>
+            <p>2</p>
+          </td>
+          <td>
+            <p>EFG3H45</p>
+          </td>
+          <td>
+            <p>6 min</p>
+          </td>
+        </tr>
+        <tr>
+          <td class="borderLeft" align="center">
+            <img
+              class="carros"
+              src="../assets/carrinho3.svg"
+              alt="carro_vermelho"
+            />
+          </td>
+          <td>
+            <p>3</p>
+          </td>
+          <td>
+            <p>EFG3H45</p>
+          </td>
+          <td>
+            <p>8 min</p>
+          </td>
+        </tr>
+        <tr>
+          <td class="borderLeft" align="center">
+            <img class="carros" src="../assets/carrinho5.svg" alt="carro_azul" />
+          </td>
+          <td>
+            <p>4</p>
+          </td>
+          <td>
+            <p>EFG3H45</p>
+          </td>
+          <td>
+            <p>8 min</p>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div>
+        <img  class="logo"src="../assets/logo.png" alt="logo">
+    </div>
+  </body>
 </html>
