@@ -44,7 +44,7 @@ app.post("/insertRetirada", (req, res) => {
   const infos = req.body;
   console.log(req.body);
   db.get(
-    `INSERT INTO carros (manobristaVolta, horarioRetirada, horarioDevolucao) VALUES ('${infos.manobristaVolta}', '${infos.horarioRetirada}', '${infos.horarioDevolucao}') WHERE id == '${infos.idQuery}'`,
+    `INSERT INTO carros (manobristaVolta, horarioRetirada, horarioDevolucao) VALUES ('${infos.manobristaVolta}', '${infos.horarioRetirada}', '${infos.horarioDevolucao}') WHERE id = '${infos.idQuery}'`,
     (error, response) => {
         if (error) {
           console.log(error)
@@ -64,7 +64,7 @@ app.post("/insertRetirada", (req, res) => {
 app.post("/retornoCarro", (req, res) => {
   const infos = req.body;
   db.all(
-    `INSERT INTO totem (placa, tempoEstimado, id) VALUES '${infos.placa}', '${infos.tempoEstimado}', '${infos.idQuery}'`,
+    `INSERT INTO totem (placa, tempoEstimado, id) VALUES ('${infos.placa}', '${infos.tempoEstimado}', '${infos.idQuery}')`,
     (error, data) => {
       res.json(data)
     }
