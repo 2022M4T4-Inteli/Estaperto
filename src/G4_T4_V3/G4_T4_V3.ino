@@ -19,19 +19,19 @@ WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
 // Instanciate the temperature sensor
 Adafruit_AHTX0 aht;
+
 // Variables to save time
 String enterTime;
 String exitTime;
 int totalTime;
-
-// variables for POSTs
-int control = 0;
-String idQuery;
-
 float firstDateHour;
 float firstDateMinutes;
 float secondDateHour;
 float secondDateMinutes;
+
+// variables for POSTs
+int control = 0;
+String idQuery;
 
 // Creating the lcd element from the adress 0x27 with 16 columns and two rows
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -216,9 +216,13 @@ void messageTemperature(double temp){
 String getId(){
   HTTPClient http;
 
+  // Server address  
   String serverAddress = "http://10.128.65.251:3031/idQuery";
 
+  // Begin http in the server
   http.begin(serverAddress);
+
+  // Type of file: json
   http.addHeader("Content-Type", "application/json");
   StaticJsonDocument<200> doc;
   doc["placa"] = "ABC0D29";
@@ -233,6 +237,7 @@ String getId(){
   }
 }
 
+// Function to make POST requests to  the database, posting information from the esp functionalities
 void postDataToServer(String endpoint, int time, String receivingTime, String parkingTime, int docControl, String id) {
   Serial.println("Posting JSON data to server...");
   // Block until we are able to connect to the WiFi access point
@@ -265,11 +270,8 @@ void postDataToServer(String endpoint, int time, String receivingTime, String pa
       doc["horarioRecebimento"] = receivingTime;
       doc["horarioEstacionamento"] = parkingTime;
     }
-    // Add an array.
-    //criar um vetor de dados
-    // JsonArray data = doc.createNestedArray("data");
-    // data.add(48.756080);
-    // data.add(2.302038);
+
+    // Send the request body via POST method
     String requestBody;
     serializeJson(doc, requestBody);
     Serial.println(requestBody);
@@ -280,13 +282,9 @@ void postDataToServer(String endpoint, int time, String receivingTime, String pa
       Serial.println(httpResponseCode);
       Serial.println(response);
     }
-    else {
-      // int statusCode = http.responseStatusCode();
-      // Serial.println(statusCode);
-      // Serial.printf("Error occurred while sending HTTP POST: %s\n", HTTPClient.errorToString(statusCode).c_str());
-    }
 }
 
+// Function to get the time when the car is received
 void getEnterTime() {
   // get actual hour
   enterTime = getDate();
@@ -294,6 +292,7 @@ void getEnterTime() {
   firstDateMinutes = timeClient.getMinutes();
 }
 
+// Function to connect to the beacon FTM
 void connectFTM(){
   // Connect to AP that has FTM Enabled
   WiFi.begin(ssidFTM, passwordFTM);
@@ -304,6 +303,7 @@ void connectFTM(){
   }
 }
 
+// Function to print in lcd wifi successful connection
 void lcdPrintConnectedWifi() {
   lcd.clear();
   lcd.print("Wi-fi conectado!");
@@ -316,6 +316,7 @@ void lcdPrintConnectedWifi() {
   delay(1000);
 }
 
+// Function to print in lcd the temperature and distance to the beacon
 void lcdPrintTemperatureDistance() {
   lcd.clear();
   sensors_event_t humidity, temp;
@@ -332,6 +333,7 @@ void lcdPrintTemperatureDistance() {
   lcd.clear();
 }
 
+// Function to print in lcd wifi successful disconnection
 void lcdPrintDisconnectedWifi() {
   digitalWrite(buzzer, HIGH); // turn on buzzer
   tone(buzzer, 4440, 200);
@@ -341,6 +343,7 @@ void lcdPrintDisconnectedWifi() {
   WiFi.begin(ssid, password);
 }
 
+// Function to get the time when the car is parked
 void getExitTime() {
   exitTime = getDate();
   lcd.println(exitTime);
@@ -431,10 +434,13 @@ void loop() {
         getExitTime();
         cardReadOnce = 0;
 
+        // Posting information in the database depending how many times the RFID was passed
+        // RFID for the second time
         if (control == 0) {
           postDataToServer("insertRecebimento", totalTime, enterTime, exitTime, control, "");
           control += 1;
         }
+        // RFID for the third time
         else if (control == 2){
           idQuery = getId();
           postDataToServer("insertRetirada", 0, enterTime, exitTime, control, idQuery);
