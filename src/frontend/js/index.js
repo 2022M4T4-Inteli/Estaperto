@@ -14,7 +14,7 @@ setInterval(function(){
   </tr>`
 
     for(var i = 0; i<Object.keys(response).length; i++){
-        document.getElementById('table').innerHTML += '<tr><td><p>' + (i + 1) + '</p></td><td><p>'+ response[i].placa + '</p></td><td><p>' + response[i].tempoEstimado + '</p></td></tr>'
+        document.getElementById('table').innerHTML += '<tr><td><p>' + (i + 1) + '</p></td><td><p>'+ response[i].placa + '</p></td><td><p>' + response[i].tempoEstimado + ' min</p></td></tr>'
     }
 
 },  1000);
