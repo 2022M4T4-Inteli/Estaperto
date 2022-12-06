@@ -44,7 +44,7 @@ app.post("/insertRetirada", (req, res) => {
   const infos = req.body;
   console.log(req.body);
   db.get(
-    `INSERT INTO carros (manobristaVolta, horarioRetirada, horarioDevolucao) VALUES ('${infos.manobristaVolta}', '${infos.horarioRetirada}', '${infos.horarioDevolucao}') WHERE id = '${infos.idQuery}'`,
+    `UPDATE carros SET manobristaVolta = "'${infos.manobristaVolta}'", horarioRetirada = "'${infos.horarioRetirada}'", horarioDevolucao = "'${infos.horarioDevolucao}'" WHERE id = '${infos.idQuery}'`,
     (error, response) => {
         if (error) {
           console.log(error)
