@@ -31,7 +31,7 @@ app.post("/insertRecebimento", (req, res) => {
   );
 });
 
-app.get("/idQuery", (req, res) => {
+app.post("/idQuery", (req, res) => {
   db.get(
     'SELECT id FROM carros WHERE placa = "' + req.body.placa + '" ORDER BY id DESC LIMIT 1',
     (error, data) => {
