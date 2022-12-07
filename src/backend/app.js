@@ -18,6 +18,8 @@ app.listen(port, hostname, () => {
 
 app.use(express.json());
 
+// The second time that the worker uses his card
+
 app.post("/insertRecebimento", (req, res) => {
   const infos = req.body;
   console.log(req.body);
@@ -31,6 +33,7 @@ app.post("/insertRecebimento", (req, res) => {
   );
 });
 
+// Get the id for the car
 app.post("/idQuery", (req, res) => {
   db.get(
     'SELECT id FROM carros WHERE placa = "' + req.body.placa + '" ORDER BY id DESC LIMIT 1',
@@ -40,6 +43,7 @@ app.post("/idQuery", (req, res) => {
   );
 });
 
+// Fourth time that the worker uses his card
 app.post("/insertRetirada", (req, res) => {
   const infos = req.body;
   console.log(req.body);
@@ -51,6 +55,7 @@ app.post("/insertRetirada", (req, res) => {
         }
     }
   );
+  // Takes the car out of queue
   db.all(
     `DELETE FROM totem WHERE id == '${infos.idQuery}'`,
     (error, response) => {
@@ -61,6 +66,7 @@ app.post("/insertRetirada", (req, res) => {
   );
 });
 
+// Third time the worker uses his card, this endpoint includes the car on our frontEnd
 app.post("/retornoCarro", (req, res) => {
   const infos = req.body;
   db.all(
@@ -71,11 +77,25 @@ app.post("/retornoCarro", (req, res) => {
   );
 });
 
+// Endpoint for our frontEnd to get what cars are already being returned
 app.get("/retornoTotem", (req, res) => {
   db.all(
     'SELECT placa, tempoEstimado FROM totem ORDER BY id ASC',
     (error, data) => {
       res.json(data)
+    }
+  );
+});
+
+// Subtract a minute from the car
+app.post("/subtractMinute", (req, res) => {
+  const infos = req.body;
+  db.all(
+    `UPDATE totem SET tempoEstimado - 1 WHERE placa = '${infos.placa}'`,
+    (error, data) => {
+      if (error) {
+        console.log(error)
+      }
     }
   );
 });
