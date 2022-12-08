@@ -48,7 +48,7 @@ app.post("/insertRetirada", (req, res) => {
   const infos = req.body;
   console.log(req.body);
   db.get(
-    `UPDATE carros SET manobristaVolta = "'${infos.manobristaVolta}'", horarioRetirada = "'${infos.horarioRetirada}'", horarioDevolucao = "'${infos.horarioDevolucao}'" WHERE id = '${infos.idQuery}'`,
+    `UPDATE carros SET manobristaVolta = "${infos.manobristaVolta}", horarioRetirada = "${infos.horarioRetirada}", horarioDevolucao = "${infos.horarioDevolucao}" WHERE id = '${infos.idQuery}'`,
     (error, response) => {
         if (error) {
           console.log(error)
@@ -91,7 +91,7 @@ app.get("/retornoTotem", (req, res) => {
 app.post("/subtractMinute", (req, res) => {
   const infos = req.body;
   db.all(
-    `UPDATE totem SET tempoEstimado - 1 WHERE placa = '${infos.placa}'`,
+    `UPDATE totem SET tempoEstimado = tempoEstimado - 1 WHERE placa = '${infos[0]}'`,
     (error, data) => {
       if (error) {
         console.log(error)
