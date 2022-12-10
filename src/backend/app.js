@@ -18,8 +18,8 @@ app.listen(port, hostname, () => {
 
 app.use(express.json());
 
-// The second time that the worker uses his card
 
+// The second time that the worker uses his card
 app.post("/insertRecebimento", (req, res) => {
   const infos = req.body;
   console.log(req.body);
@@ -96,6 +96,19 @@ app.post("/subtractMinute", (req, res) => {
       if (error) {
         console.log(error)
       }
+    }
+  );
+});
+
+// Delete that plate com totem
+app.post("/deleteZero", (req, res) => {
+  const infos = req.body;
+  db.all(
+    `DELETE FROM totem WHERE placa = '${infos[0]}'`,
+    (error, response) => {
+        if (error) {
+          console.log(error)
+        }
     }
   );
 });

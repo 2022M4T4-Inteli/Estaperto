@@ -28,42 +28,61 @@ setInterval(function(){
 },  1000);
 
 function subtractMinute(){
+
+  // For each plate
   for(var i = 0; i<Object.keys(response).length; i++){
 
-    if(!responseList.includes(response[i].placa)){
-      responseList.push(response[i].placa);    
+    // Check if estimated time is less than zero, and if it is, remove from the totem
+    if(response[i].tempoEstimado < 0){
+      var url = "http://10.128.65.251:3031/deleteZero";
+      var xhttp = new XMLHttpRequest();
+      xhttp.open("POST", url, true);
+      xhttp.setRequestHeader('Content-type', 'application/json');
+      xhttp.send(JSON.stringify([plateList[i]]));
     }
     
-    if(!plateList.includes(response[i].placa)){
-      plateList.push(response[i].placa);
-      timeList.push(0);
+    // Else create a time for this plate if it doesn't already have one and includes in the list with all the current plates on display
+    else{
+      if(!responseList.includes(response[i].placa)){
+        responseList.push(response[i].placa);    // Pushes to our list with the response plates
+      }
+      
+      if(!plateList.includes(response[i].placa)){
+        plateList.push(response[i].placa);  // Pushes to our list with all the current plates on display
+        timeList.push(0); // Creates a time for this plate
+      }
     }
   }
   
   var counter = 0;
+
+  // For each plate in plate List
   for(var i = 0; i<plateList.length; i++){
     counter++;
 
+    // If response List doesn't have this plate, remove the plate from our list with all the current plates on display and from the list with times
     if(!responseList.includes(plateList[i])){
       plateList.splice(counter, 1);
       timeList.splice(counter, 1);
     }
   }
 
-  var url = "http://10.128.65.251:3031/subtractMinute";
+  var url = "http://10.128.65.251:3031/subtractMinute"; // Endpoint URL for subtracting a minute from database
+
+  // Every second execute what is inside
   setTimeout(() => {
+    // For each time in the list
     for(var i = 0; i<timeList.length; i++){
+      // If the time is 59 or bigger, we take a minute out from that plate on the database
       if(timeList[i] >= 59){
         var xhttp = new XMLHttpRequest();
         xhttp.open("POST", url, true);
         xhttp.setRequestHeader('Content-type', 'application/json');
-        console.log(JSON.stringify(plateList[i]));
-        xhttp.send(JSON.stringify([plateList[i]]));
-        timeList[i] = 0;
+        xhttp.send(JSON.stringify([plateList[i]])); // Sends the plate in a list format
+        timeList[i] = 0; // Set that time to zero so the counting can restart
       }else{
-        timeList[i]++;
+        timeList[i]++; // Esle, add one to the time
       }
     }
   }, 1000)
-  console.log(timeList);
 }
