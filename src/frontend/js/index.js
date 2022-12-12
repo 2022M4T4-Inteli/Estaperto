@@ -2,10 +2,11 @@ var response;
 var plateList= [];
 var timeList = [];
 var responseList = [];
+var hostname = "http://10.128.65.55:3031"
 
 // Every second this will run
 setInterval(function(){
-  var url = "http://10.128.65.55:3031/retornoTotem"; // Endpoint
+  var url = hostname + "/retornoTotem"; // Endpoint
   var xhttp = new XMLHttpRequest(); // Create instance
   xhttp.open("GET", url, false); // Make a get request
   xhttp.send();//The script's execution stops here until the server returns the requirements 
@@ -34,7 +35,7 @@ function subtractMinute(){
 
     // Check if estimated time is less than zero, and if it is, remove from the totem
     if(response[i].tempoEstimado < 0){
-      var url = "http://10.128.65.55:3031/deleteZero";
+      var url = hostname + "/deleteZero";
       var xhttp = new XMLHttpRequest();
       xhttp.open("POST", url, true);
       xhttp.setRequestHeader('Content-type', 'application/json');
@@ -67,7 +68,7 @@ function subtractMinute(){
     }
   }
 
-  var url = "http://10.128.65.251:3031/subtractMinute"; // Endpoint URL for subtracting a minute from database
+  var url = hostname + "/subtractMinute"; // Endpoint URL for subtracting a minute from database
 
   // Every second execute what is inside
   setTimeout(() => {
@@ -89,7 +90,7 @@ function subtractMinute(){
 
 // Insert into the report in the average time of the driver
 function getTimeDriver1() {
-  url = "http://10.128.64.78:3031/mediaManobrista1";
+  url = hostname + "/mediaManobrista1";
   fetch(url)
   .then(response => response.json())
   .then(data => averageTime1.textContent=data[0].tempoIda)
