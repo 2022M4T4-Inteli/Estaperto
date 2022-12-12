@@ -5,7 +5,7 @@ var responseList = [];
 
 // Every second this will run
 setInterval(function(){
-  var url = "http://10.128.65.251:3031/retornoTotem"; // Endpoint
+  var url = "http://10.128.65.55:3031/retornoTotem"; // Endpoint
   var xhttp = new XMLHttpRequest(); // Create instance
   xhttp.open("GET", url, false); // Make a get request
   xhttp.send();//The script's execution stops here until the server returns the requirements 
@@ -34,7 +34,7 @@ function subtractMinute(){
 
     // Check if estimated time is less than zero, and if it is, remove from the totem
     if(response[i].tempoEstimado < 0){
-      var url = "http://10.128.65.251:3031/deleteZero";
+      var url = "http://10.128.65.55:3031/deleteZero";
       var xhttp = new XMLHttpRequest();
       xhttp.open("POST", url, true);
       xhttp.setRequestHeader('Content-type', 'application/json');
@@ -81,7 +81,7 @@ function subtractMinute(){
         xhttp.send(JSON.stringify([plateList[i]])); // Sends the plate in a list format
         timeList[i] = 0; // Set that time to zero so the counting can restart
       }else{
-        timeList[i]++; // Esle, add one to the time
+        timeList[i]++; // Else, add one to the time
       }
     }
   }, 1000)

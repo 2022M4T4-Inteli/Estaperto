@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const urlencodedParser = bodyParser.urlencoded({ extended: false })
 const app = express();
 
-const hostname = '10.128.65.251';
+const hostname = '10.128.65.55';
 const port = 3031;
 const db = new sqlite3.Database("database.db")
 
@@ -48,7 +48,7 @@ app.post("/insertRetirada", (req, res) => {
   const infos = req.body;
   console.log(req.body);
   db.get(
-    `UPDATE carros SET manobristaVolta = "${infos.manobristaVolta}", horarioRetirada = "${infos.horarioRetirada}", horarioDevolucao = "${infos.horarioDevolucao}" WHERE id = '${infos.idQuery}'`,
+    `UPDATE carros SET manobristaVolta = "${infos.manobristaVolta}", horarioRetirada = "${infos.horarioRetirada}", horarioDevolucao = "${infos.horarioDevolucao}", tempoVolta = ${infos.tempoVolta} WHERE id = '${infos.idQuery}'`,
     (error, response) => {
         if (error) {
           console.log(error)
@@ -109,6 +109,24 @@ app.post("/deleteZero", (req, res) => {
         if (error) {
           console.log(error)
         }
+    }
+  );
+});
+
+app.get("/mediaManobrista1", (req, res) => {
+  db.all(
+    `SELECT ROUND(AVG(tempoEstimado), 1) AS tempoIda FROM carros WHERE manobristaIda = "CFM00"`, 
+    (error, data) => {
+      res.json(data);
+    }
+  );
+});
+
+app.get("/mediaManobrista2", (req, res) => {
+  db.all(
+    `SELECT ROUND(AVG(tempoVolta), 1) AS tempoVolta FROM carros WHERE manobristaVolta = "AWD11"`, 
+    (error, data) => {
+      res.json(data);
     }
   );
 });

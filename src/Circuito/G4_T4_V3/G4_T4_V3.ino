@@ -31,7 +31,7 @@ float secondDateMinutes;
 
 // variables for POSTs
 int control = 0;
-String idQuery;
+int idQuery;
 
 // Creating the lcd element from the adress 0x27 with 16 columns and two rows
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -62,8 +62,11 @@ void onFtmReport(arduino_event_t *event) {
     lcd.print((float)report-> dist_est / 100.0 - 39.7);
     lcd.setCursor(4, 0);
     lcd.print("m");
+    lcd.setCursor(5, 0);
+    lcd.print("            ");
+
     // Pointer to FTM Report with multiple entries, should be freed after use
-    free(report->ftm_report_data);
+    //free(report->ftm_report_data);
   } else {
     Serial.print("FTM Error: ");
     Serial.println(status_str[report->status]);
@@ -213,11 +216,11 @@ void messageTemperature(double temp){
   }
 }
 
-String getId(){
+int getId(){
   HTTPClient http;
 
   // Server address  
-  String serverAddress = "http://10.128.65.251:3031/idQuery";
+  String serverAddress = "http://10.128.65.55:3031/idQuery";
 
   // Begin http in the server
   http.begin(serverAddress);
@@ -225,25 +228,23 @@ String getId(){
   // Type of file: json
   http.addHeader("Content-Type", "application/json");
   StaticJsonDocument<200> doc;
-  doc["placa"] = "ABC0D29";
+  doc["placa"] = "ABC0D28";
   String requestBody;
   serializeJson(doc, requestBody);
   int httpResponseCode = http.POST(requestBody);
-  if(httpResponseCode>0){
-    String response = http.getString();
-    Serial.println(httpResponseCode);
-    Serial.println(response);
-  return response;
-  }
+  String response = http.getString();
+  deserializeJson(doc, response);
+  int returnedId = doc["id"];
+  return returnedId;
 }
 
 // Function to make POST requests to  the database, posting information from the esp functionalities
-void postDataToServer(String endpoint, int time, String receivingTime, String parkingTime, int docControl, String id) {
+void postDataToServer(String endpoint, int time, String receivingTime, String parkingTime, int docControl, int id) {
   Serial.println("Posting JSON data to server...");
   // Block until we are able to connect to the WiFi access point
     HTTPClient http;
     //endereço do servidor
-    String serverAddress = "http://10.128.65.251:3031/" + endpoint;
+    String serverAddress = "http://10.128.65.55:3031/" + endpoint;
 
     http.begin(serverAddress);
     http.addHeader("Content-Type", "application/json");
@@ -251,7 +252,7 @@ void postDataToServer(String endpoint, int time, String receivingTime, String pa
 
     // Add values in the document
     if (docControl == 0){
-      doc["placa"] = "ABC0D29";
+      doc["placa"] = "ABC0D28";
       doc["manobristaIda"] = "CFM00";
       doc["tempoEstimado"] = time;
       doc["horarioRecebimento"] = receivingTime;
@@ -260,15 +261,16 @@ void postDataToServer(String endpoint, int time, String receivingTime, String pa
 
     else if (docControl == 1) {
       doc["idQuery"] = id;
-      doc["placa"] = "ABC0D29";
+      doc["placa"] = "ABC0D28";
       doc["tempoEstimado"] = time;
     }
 
     else{
       doc["idQuery"] = id;
       doc["manobristaVolta"] = "AWD11";
-      doc["horarioRecebimento"] = receivingTime;
-      doc["horarioEstacionamento"] = parkingTime;
+      doc["horarioRetirada"] = receivingTime;
+      doc["horarioDevolucao"] = parkingTime;
+      doc["tempoVolta"] = time;
     }
 
     // Send the request body via POST method
@@ -290,6 +292,14 @@ void getEnterTime() {
   enterTime = getDate();
   firstDateHour = timeClient.getHours();
   firstDateMinutes = timeClient.getMinutes();
+}
+
+void connectLocalWifi() {
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+  }
+  Serial.println("Conectado a rede local");
 }
 
 // Function to connect to the beacon FTM
@@ -340,7 +350,6 @@ void lcdPrintDisconnectedWifi() {
   digitalWrite(buzzer, LOW); //turn off buzzer
   lcd.setCursor(0, 0);
   lcd.print("Wi-fi desconectado");
-  WiFi.begin(ssid, password);
 }
 
 // Function to get the time when the car is parked
@@ -380,8 +389,8 @@ void setup() {
   lcd.setCursor(0, 0);
   // Station mode: the ESP32 connects to an access point
   WiFi.mode(WIFI_STA);
-  // Connect to local netork
-  WiFi.begin(ssid, password);
+  // Connect to local network
+  connectLocalWifi();
   // Begin the NTP Client server
   timeClient.begin();
   // Brazil offset
@@ -414,7 +423,11 @@ void loop() {
       delay(2000);
       lcdPrintTemperatureDistance();
       if (control == 1) {
-        postDataToServer("retornoCarro", totalTime, "", "", control, "");
+        WiFi.disconnect();
+        connectLocalWifi();
+        idQuery = getId();
+        postDataToServer("retornoCarro", totalTime, "", "", control, idQuery);
+        control += 1;
       }
     }
     // When the RFID card is read for the second time the FTM is disconnected
@@ -434,16 +447,17 @@ void loop() {
         getExitTime();
         cardReadOnce = 0;
 
+        connectLocalWifi();
         // Posting information in the database depending how many times the RFID was passed
         // RFID for the second time
         if (control == 0) {
-          postDataToServer("insertRecebimento", totalTime, enterTime, exitTime, control, "");
+          postDataToServer("insertRecebimento", totalTime, enterTime, exitTime, control, 0);
           control += 1;
         }
         // RFID for the third time
         else if (control == 2){
           idQuery = getId();
-          postDataToServer("insertRetirada", 0, enterTime, exitTime, control, idQuery);
+          postDataToServer("insertRetirada", totalTime, enterTime, exitTime, control, idQuery);
           control = 0;
         }
       }
