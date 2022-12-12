@@ -86,3 +86,13 @@ function subtractMinute(){
     }
   }, 1000)
 }
+
+// Insert into the report in the average time of the driver
+function getTimeDriver1() {
+  url = "http://10.128.64.78:3031/mediaManobrista1";
+  fetch(url)
+  .then(response => response.json())
+  .then(data => averageTime1.textContent=data[0].tempoIda)
+}
+
+getTimeDriver1();

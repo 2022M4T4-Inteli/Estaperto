@@ -3,6 +3,7 @@ const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
 const urlencodedParser = bodyParser.urlencoded({ extended: false })
 const app = express();
+const cors = require('cors');
 
 const hostname = '10.128.65.55';
 const port = 3031;
@@ -10,6 +11,7 @@ const db = new sqlite3.Database("database.db")
 
 app.use(express.static("../frontend/pages"));
 app.use(express.static("../frontend/"));
+app.use(cors());
 
 app.listen(port, hostname, () => {
   console.log(`Page server running at http://${hostname}:${port}`);
@@ -113,6 +115,7 @@ app.post("/deleteZero", (req, res) => {
   );
 });
 
+// Get the average time of drive from driver 1
 app.get("/mediaManobrista1", (req, res) => {
   db.all(
     `SELECT ROUND(AVG(tempoEstimado), 1) AS tempoIda FROM carros WHERE manobristaIda = "CFM00"`, 
@@ -122,6 +125,7 @@ app.get("/mediaManobrista1", (req, res) => {
   );
 });
 
+// Get the average time of drive from driver 2
 app.get("/mediaManobrista2", (req, res) => {
   db.all(
     `SELECT ROUND(AVG(tempoVolta), 1) AS tempoVolta FROM carros WHERE manobristaVolta = "AWD11"`, 
