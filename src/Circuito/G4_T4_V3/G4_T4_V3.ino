@@ -313,10 +313,10 @@ void connectFTM(){
   }
 }
 
-// Function to print in lcd wifi successful connection
-void lcdPrintConnectedWifi() {
+// Function to print in lcd FTM successful connection
+void lcdPrintConnectedFTM() {
   lcd.clear();
-  lcd.print("Wi-fi conectado!");
+  lcd.print("FTM conectado!");
   digitalWrite(buzzer, HIGH); // turn on buzzer
   tone(buzzer, 2000, 300);
   lcd.setCursor(4, 1);
@@ -343,13 +343,13 @@ void lcdPrintTemperatureDistance() {
   lcd.clear();
 }
 
-// Function to print in lcd wifi successful disconnection
-void lcdPrintDisconnectedWifi() {
+// Function to print in lcd FTM successful disconnection
+void lcdPrintDisconnectedFTM() {
   digitalWrite(buzzer, HIGH); // turn on buzzer
   tone(buzzer, 4440, 200);
   digitalWrite(buzzer, LOW); //turn off buzzer
   lcd.setCursor(0, 0);
-  lcd.print("Wi-fi desconectado");
+  lcd.print("FTM desconectado");
 }
 
 // Function to get the time when the car is parked
@@ -412,11 +412,11 @@ void loop() {
       // Listen for FTM Report events
       WiFi.onEvent(onFtmReport, ARDUINO_EVENT_WIFI_FTM_REPORT);
       connectFTM();
-      // Print in the lcd the time and play a sound when Wifi is connected
+      // Print in the lcd the time and play a sound when FTM is connected
       if (WiFi.status() == 3) {
-        lcdPrintConnectedWifi();
+        lcdPrintConnectedFTM();
       }
-      // Print in the lcd if Wifi is not connected
+      // Print in the lcd if FTM is not connected
       else if (WiFi.status() == WL_CONNECT_FAILED) {
         lcd.println("Falha na conexao");
       }
@@ -433,16 +433,16 @@ void loop() {
     // When the RFID card is read for the second time the FTM is disconnected
     else if(cardReadOnce == 1) {
       WiFi.disconnect();
-      // Print in the lcd the disconnecting message while Wifi is disconnecting
+      // Print in the lcd the disconnecting message while FTM is disconnecting
       while (WiFi.status() != WL_DISCONNECTED) {
         lcd.clear();
         lcd.setCursor(0, 0);
         lcd.print("Desconectando...");
       }
       lcd.clear();
-      // Print in the lcd a message when Wifi is disconnected
+      // Print in the lcd a message when FTM is disconnected
       if (WiFi.status() == WL_DISCONNECTED) {
-        lcdPrintDisconnectedWifi();
+        lcdPrintDisconnectedFTM();
         lcd.setCursor(4, 1);
         getExitTime();
         cardReadOnce = 0;
