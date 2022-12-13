@@ -11,7 +11,7 @@
 ## Integrantes: 
 - <a href="https://www.linkedin.com/in/bianca-cassemiro/">Bianca Cassemiro Lima</a>
 - <a href="https://www.linkedin.com/in/jordan-acs/">Jordan Andrade Custodio da Silva</a>
-- <a href="https://www.linkedin.com/in/pedro-rom%C3%A3o-734b4920a/">Pedro Romão Cerdeira Diass</a> 
+- <a href="https://www.linkedin.com/in/pedro-rom%C3%A3o-734b4920a/">Pedro Romão Cerdeira Dias</a> 
 - <a href="https:https://www.linkedin.com/in/vitoraugustobarros/">Vitor Augusto Menten de Barros</a>
 - <a href="https://www.linkedin.com/in/wagner-estevam/">Wagner Estevam Barcelos da Silva</a>
 
@@ -31,16 +31,16 @@ O problema trazido pelo parceiro é que muitas vezes os clientes não sabem quan
 |--> imagens<br>
 |--> src<br>
   |--> backend<br>
-    |--> node_modules/cors
+    |--> node_modules/cors<br>
     &emsp;|--> app.js<br>
     &emsp;|--> database.db<br>
     &emsp;|--> database.sqbpro<br>
     &emsp;|--> package.json<br>
     &emsp;|--> package-lock.json<br>
   |--> Circuito<br>
-    |--> G4_T4_V4
+    |--> G4_T4_V4<br>
       &emsp;|--> G4_T4_V4<br>
-    |--> responder
+    |--> responder<br>
       &emsp;|--> responder<br>
   |--> frontend<br>
     |--> assets<br>
@@ -117,4 +117,4 @@ Para executar o projeto, leia as seções 4 e 5 do Manual de Instruções Módul
 
 ## 📋 Licença/License
 
-<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/"><a property="dct:title" rel="cc:attributionURL" href="https://github.com/2022M4T4-Inteli/Estaperto">Estaperto</a> by <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://github.com/InteliProjects/.github/blob/main/profile/README.md">Inteli, <a href="https://www.linkedin.com/in/bianca-cassemiro/">Bianca Cassemiro Lima</a>, <a href="https://www.linkedin.com/in/jordan-acs/">Jordan Andrade Custodio da Silva</a>, <a href="https://www.linkedin.com/in/pedro-rom%C3%A3o-734b4920a/">Pedro Romão Cerdeira Diass</a>, <a href="https:https://www.linkedin.com/in/vitoraugustobarros/">Vitor Augusto Menten de Barros</a>, <a href="https://www.linkedin.com/in/wagner-estevam/">Wagner Estevam Barcelos da Silva</a> is licensed under <a href="http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">Attribution 4.0 International</a>.</p>
+<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/"><a property="dct:title" rel="cc:attributionURL" href="https://github.com/2022M4T4-Inteli/Estaperto">Estaperto</a> by <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://github.com/InteliProjects/.github/blob/main/profile/README.md">Inteli, <a href="https://www.linkedin.com/in/bianca-cassemiro/">Bianca Cassemiro Lima</a>, <a href="https://www.linkedin.com/in/jordan-acs/">Jordan Andrade Custodio da Silva</a>, <a href="https://www.linkedin.com/in/pedro-rom%C3%A3o-734b4920a/">Pedro Romão Cerdeira Dias</a>, <a href="https:https://www.linkedin.com/in/vitoraugustobarros/">Vitor Augusto Menten de Barros</a>, <a href="https://www.linkedin.com/in/wagner-estevam/">Wagner Estevam Barcelos da Silva</a> is licensed under <a href="http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">Attribution 4.0 International</a>.</p>
