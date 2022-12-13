@@ -2,7 +2,7 @@ var response;
 var plateList= [];
 var timeList = [];
 var responseList = [];
-var hostname = "http://10.128.65.55:3031"
+var hostname = "http://10.128.64.117:3031"
 
 // Every second this will run
 setInterval(function(){
