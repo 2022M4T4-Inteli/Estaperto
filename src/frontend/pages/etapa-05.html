@@ -37,7 +37,7 @@
                 </div>
             </div>
 
-            <li>
+            <li>    
                 <div class="d-flex flex-column gap-4">
                     <div class="d-flex align-items-center gap-3 pt-5">
                         <img src="../assets/motorista.png" width="24px" alt=""><a href="#">Buscar Motorista</a>
@@ -76,7 +76,7 @@
                     <h2 class="text-center pt-3">Lista Geral</h2>
                     
                     <div class="list__wrap">
-                        <div class="list__item d-flex justify-content-between align-items-center">
+                        <div class="list__item d-flex justify-content-between align-items-center" onclick="getDriver(1)">
                             <div class="d-flex gap-3 align-items-center">
                                 <img class="list__avatar" src="../assets/iconDriver2.png" alt="">
                                 <p class="m-0">Luiz Felipe Kama </p>
@@ -87,7 +87,7 @@
                             </div>
                         </div>
 
-                        <div class="list__item d-flex justify-content-between align-items-center mt-4">
+                        <div class="list__item d-flex justify-content-between align-items-center mt-4" onclick="getDriver(2)">
                             <div class="d-flex gap-3 align-items-center">
                                 <img class="list__avatar" src="../assets/iconDriver.png" alt="">
                                 <p class="m-0">Carlos Eduardo</p>
@@ -161,12 +161,12 @@
                     <div class="graphic__wrap px-4">
                         <div class="graphic__item d-flex flex-column gap-3">
                             <div class="d-flex gap-3 align-items-center">
-                                <img class="graphic__avatar" src="../assets/driver9.png" alt="">
-                                <p class="m-0">Pedro Oliveira</p>
+                                <img id="img" class="graphic__avatar" src="../assets/iconDriver2.png" alt="">
+                                <p id="name" class="m-0">Luiz Felipe Kama</p>
                             </div>
                             <div class="d-flex gap-3 align-items-center ps-4">
                                 <img src="../assets/pin-estacionamento.png" id="pin" alt="">
-                                <span>Aero Congonhas</span>
+                                <span id="estacio">Aero Congonhas</span>
                             </div>
                         </div>
 

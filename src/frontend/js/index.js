@@ -2,7 +2,7 @@ var response;
 var plateList= [];
 var timeList = [];
 var responseList = [];
-var hostname = "http://10.128.64.117:3031"
+var hostname = "http://10.128.65.112:3031"
 
 // Every second this will run
 setInterval(function(){
@@ -87,13 +87,3 @@ function subtractMinute(){
     }
   }, 1000)
 }
-
-// Insert into the report in the average time of the driver
-function getTimeDriver1() {
-  url = hostname + "/mediaManobrista1";
-  fetch(url)
-  .then(response => response.json())
-  .then(data => averageTime1.textContent=data[0].tempoIda)
-}
-
-getTimeDriver1();
