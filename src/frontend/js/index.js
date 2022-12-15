@@ -2,15 +2,21 @@ var response;
 var plateList= [];
 var timeList = [];
 var responseList = [];
-var hostname = "http://10.128.65.112:3031"
+var hostname = "http://10.128.65.233:3031"
+
 
 // Every second this will run
 setInterval(function(){
+  var today = new Date(); // Create object for time
+  var time = today.getHours() + ":" + today.getMinutes(); // Get current hour and minute
   var url = hostname + "/retornoTotem"; // Endpoint
   var xhttp = new XMLHttpRequest(); // Create instance
   xhttp.open("GET", url, false); // Make a get request
   xhttp.send();//The script's execution stops here until the server returns the requirements 
   response = JSON.parse(xhttp.responseText); // Saves what comes back from the request
+
+  // Current time
+  document.getElementById('nav').innerHTML = `<div class="hour" id="CurrentTime">` + time + `</div>`;
 
   // Creating head of table
   document.getElementById('table').innerHTML = `<tr>

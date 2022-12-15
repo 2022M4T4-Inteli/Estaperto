@@ -5,7 +5,7 @@ const urlencodedParser = bodyParser.urlencoded({ extended: false })
 const app = express();
 const cors = require('cors');
 
-const hostname = '10.128.65.112';
+const hostname = '10.128.65.233';
 const port = 3031;
 const db = new sqlite3.Database("database.db")
 
