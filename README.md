@@ -23,48 +23,18 @@ O problema trazido pelo parceiro é que muitas vezes os clientes não sabem quan
 ## 📁 Estrutura de pastas
 
 |--> documentos<br>
-  &emsp;| --> Backup <br>
-  &emsp;| IoTDoc Módulo 4 - v5 - G4.pdf<br>
-  &emsp;| IoTDoc Módulo 4 - v5 - G4.docx<br>
-  &emsp;| Manual de Instruções Módulo 4 - v3 - G4.pdf<br>
-  &emsp;| Manual de Instruções Módulo 4 - v3 - G4.docx<br>
-|--> imagens<br>
-|--> src<br>
-  |--> backend<br>
-    |--> node_modules/cors<br>
-    &emsp;|--> app.js<br>
-    &emsp;|--> database.db<br>
-    &emsp;|--> database.sqbpro<br>
-    &emsp;|--> package.json<br>
-    &emsp;|--> package-lock.json<br>
-  |--> Circuito<br>
-    |--> G4_T4_V4<br>
-      &emsp;|--> G4_T4_V4<br>
-    |--> responder<br>
-      &emsp;|--> responder<br>
-  |--> frontend<br>
-    |--> assets<br>
-    |--> js<br>
-      &emsp;|--> average.js<br>
-      &emsp;|--> index.js<br>
-      &emsp;|--> navbar.js<br>
-    |--> pages<br>
-      &emsp;|--> etapa-05.html<br>
-      &emsp;|--> etapa-06.html<br>
-      &emsp;|--> index.html<br>
-      &emsp;|--> etapa-05.html<br>
-      &emsp;|--> login.html<br>
-      &emsp;|--> newDashboard.html<br>
-    |--> projeto<br>
-    |--> styles<br>
-      &emsp;|--> dashboardStyle.css<br>
-      &emsp;|--> indexStyle.css<br>
-      &emsp;|--> main.css<br>
-      &emsp;|--> newDashboard.css<br>
-      &emsp;|--> sidebar.css<br>
-      &emsp;|--> style.css<br>
+  &emsp;| --> outros <br>
+  &emsp;| T4_G4_V05_IoT_Document.pdf<br>
+  &emsp;| T4_G4_V05_IoT_Document.docx<br>
+  
+  &emsp;| T4_G4_V03_Manual_de_Instruções.pdf<br>
+  &emsp;| T4_G4_V03_Manual_de_Intruções.docx<br>
+|--> Src<br>
+  &emsp;|--> Backend<br>
+  &emsp;|--> Circuito<br>
+  &emsp;|--> Frontend<br>
 | readme.md<br>
-
+| license.txt
 Dentre os arquivos presentes na raiz do projeto, definem-se:
 
 - <b>readme.md</b>: arquivo que serve como guia e explicação geral sobre o projeto (o mesmo que você está lendo agora).
@@ -77,7 +47,10 @@ Dentre os arquivos presentes na raiz do projeto, definem-se:
 
 ## 💻 Execução dos projetos
 
-Para executar o projeto, leia as seções 4 e 5 do Manual de Instruções Módulo 4 - v3 - G4. Elas explicam detalhadamente como instalar todos os softwares necessários e como configurar os ambientes (servidor e esp).
+Um guia para a execução desse projeto pode ser encontrado no conteúdo do documento "Manual de Instruções", dentro da pasta "documentos".
+
+Se preferir, também é possível acessá-lo a partir do seguinte link:
+https://github.com/2022M4T4-Inteli/Estaperto/blob/main/documentos/T4_G4_V03_Manual%20de%20Instru%C3%A7%C3%B5es.pdf
 
 ## 🗃 Histórico de lançamentos
 
